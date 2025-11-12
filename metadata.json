@@ -1,0 +1,7 @@
+{
+  "name": "Socratic Tutor AI",
+  "description": "Engage in a Socratic dialogue with an AI professor on uploaded class materials. By default, the app simulates a stern law professor quizzing you on measures of damages in American contract law and the famous 'Hairy Hand' case, Hawkins v. McGee.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
