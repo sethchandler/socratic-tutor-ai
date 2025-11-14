@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { DEFAULT_CLASS_MATERIALS, DEFAULT_PERSONALITY_PROFILE, GEMINI_PRICING_URL } from './constants';
+import { DEFAULT_CLASS_MATERIALS, DEFAULT_PERSONALITY_PROFILE, DEFAULT_STUDENT_PERSONALITY, GEMINI_PRICING_URL } from './constants';
 import { useSocraticTutor } from './hooks/useSocraticTutor';
 import FileUpload from './components/FileUpload';
 import { TranscriptItem, PrebuiltVoice, PREBUILT_VOICES } from './types';
@@ -9,15 +9,20 @@ import { MicIcon, StopCircleIcon, UserIcon, BotIcon, SaveIcon, PauseIcon, PlayIc
 const App: React.FC = () => {
   const [apiKey, setApiKey] = useState<string>('');
   const [tempApiKey, setTempApiKey] = useState<string>('');
+  const [mode, setMode] = useState<'student' | 'professor'>('student');
   const [classMaterials, setClassMaterials] = useState<string>(DEFAULT_CLASS_MATERIALS);
   const [personalityProfile, setPersonalityProfile] = useState<string>(DEFAULT_PERSONALITY_PROFILE);
+  const [studentPersonality, setStudentPersonality] = useState<string>(DEFAULT_STUDENT_PERSONALITY);
   const [studentName, setStudentName] = useState<string>('Mr. Hart');
+  const [professorName, setProfessorName] = useState<string>('Professor Kingsfield');
   const [voice, setVoice] = useState<PrebuiltVoice>('Zephyr');
   const [allowWebSearch, setAllowWebSearch] = useState<boolean>(false);
   const [isSaveDropdownOpen, setIsSaveDropdownOpen] = useState(false);
   const saveDropdownRef = useRef<HTMLDivElement>(null);
   const [isMaterialsVisible, setIsMaterialsVisible] = useState<boolean>(false);
   const [isPersonalityVisible, setIsPersonalityVisible] = useState<boolean>(false);
+  const [isStudentPersonalityVisible, setIsStudentPersonalityVisible] = useState<boolean>(false);
+  const transcriptEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const savedKey = localStorage.getItem('google-api-key');
@@ -34,28 +39,47 @@ const App: React.FC = () => {
   };
 
   const systemInstruction = useMemo(() => {
-    return `
-      You are an AI simulating a professor engaging a student in a Socratic dialogue. 
-      The student you are addressing is named ${studentName}. You must address them by this name.
-      Your personality and demeanor should be exactly as described in the profile below.
-      --- PERSONALITY PROFILE ---
-      ${personalityProfile}
-      ---
-      You are quizzing the student on the following class materials. Your questions should be probing, challenging, and force the student to think critically and defend their answers. Do not simply provide information.
-      --- CLASS MATERIALS ---
-      ${classMaterials}
-      ---
-      Keep your responses concise and spoken. Address the user directly as your student.
-      Begin the dialogue immediately by addressing ${studentName} and asking your first challenging question based on the provided materials. Do not wait for them to speak first.
-      ${allowWebSearch ? `
-      --- WEB SEARCH RULES ---
-      If a student asks a question where you are uncertain of the answer or it requires external knowledge, you are permitted to use the web to find the answer.
-      When you do this, you MUST first say something like: "That is an intriguing point, ${studentName}. Allow me a moment to consider that." or "You have raised an interesting question. Let me do justice to it by thinking about it for a moment."
-      After this verbal pause, you should then provide the answer based on the information you would have found.
-      ---
-      ` : ''}
-    `;
-  }, [classMaterials, personalityProfile, studentName, allowWebSearch]);
+    if (mode === 'student') {
+      return `
+        You are an AI simulating a professor engaging a student in a Socratic dialogue.
+        You are ${professorName}, and the student you are addressing is named ${studentName}. You must address them by this name.
+        Your personality and demeanor should be exactly as described in the profile below.
+        --- PERSONALITY PROFILE ---
+        ${personalityProfile}
+        ---
+        You are quizzing the student on the following class materials. Your questions should be probing, challenging, and force the student to think critically and defend their answers. Do not simply provide information.
+        --- CLASS MATERIALS ---
+        ${classMaterials}
+        ---
+        Keep your responses concise and spoken. Address the user directly as your student.
+        Begin the dialogue immediately by addressing ${studentName} and asking your first challenging question based on the provided materials. Do not wait for them to speak first.
+        ${allowWebSearch ? `
+        --- WEB SEARCH RULES ---
+        If a student asks a question where you are uncertain of the answer or it requires external knowledge, you are permitted to use the web to find the answer.
+        When you do this, you MUST first say something like: "That is an intriguing point, ${studentName}. Allow me a moment to consider that." or "You have raised an interesting question. Let me do justice to it by thinking about it for a moment."
+        After this verbal pause, you should then provide the answer based on the information you would have found.
+        ---
+        ` : ''}
+      `;
+    } else {
+      // Professor mode - AI plays the student
+      return `
+        You are an AI simulating a student in a Socratic dialogue with a professor.
+        You are ${studentName}, and the professor addressing you is named ${professorName}.
+        Your personality and learning style should be exactly as described in the profile below.
+        --- STUDENT PERSONALITY ---
+        ${studentPersonality}
+        ---
+        You are being quizzed on the following class materials. Listen to the professor's questions and respond thoughtfully, demonstrating your understanding while occasionally showing confusion or needing clarification.
+        You may occasionally ask questions of ${professorName} for clarification when genuinely confused.
+        --- CLASS MATERIALS ---
+        ${classMaterials}
+        ---
+        Keep your responses concise and spoken. Respond naturally as a student would in conversation.
+        Wait for the professor to ask you the first question. Do not speak first.
+      `;
+    }
+  }, [mode, classMaterials, personalityProfile, studentPersonality, studentName, professorName, allowWebSearch]);
 
   const {
     isSessionActive,
@@ -68,7 +92,7 @@ const App: React.FC = () => {
     stopSession,
     pauseSession,
     resumeSession,
-  } = useSocraticTutor(systemInstruction, voice, apiKey);
+  } = useSocraticTutor(systemInstruction, voice, apiKey, mode);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -81,6 +105,11 @@ const App: React.FC = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Auto-scroll transcript to bottom when new content arrives
+  useEffect(() => {
+    transcriptEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [transcript]);
 
   const handleFileContentSelect = (setter: React.Dispatch<React.SetStateAction<string>>) => (content: string) => {
     setter(content);
@@ -110,7 +139,13 @@ const App: React.FC = () => {
     let mimeType = 'text/plain;charset=utf-8';
     let extension = format;
 
-    const speakerName = (speaker: 'user' | 'professor') => speaker === 'user' ? studentName : 'Professor';
+    const speakerName = (speaker: 'user' | 'professor') => {
+      if (mode === 'student') {
+        return speaker === 'user' ? studentName : 'Professor';
+      } else {
+        return speaker === 'user' ? professorName : 'Student';
+      }
+    };
 
     switch (format) {
         case 'json':
@@ -186,6 +221,38 @@ const App: React.FC = () => {
             <div className="bg-neutral p-4 rounded-lg shadow-lg">
               <h2 className="text-xl font-semibold mb-3 text-white border-b border-gray-600 pb-2">Configuration</h2>
                <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Mode
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setMode('student')}
+                    disabled={isSessionActive}
+                    className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+                      mode === 'student'
+                        ? 'bg-accent text-black'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    AI Professor
+                  </button>
+                  <button
+                    onClick={() => setMode('professor')}
+                    disabled={isSessionActive}
+                    className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+                      mode === 'professor'
+                        ? 'bg-accent text-black'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    AI Student
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  {mode === 'student' ? 'You are the student, AI is the professor' : 'You are the professor, AI is the student'}
+                </p>
+              </div>
+               <div className="mb-4">
                 <label htmlFor="student-name" className="block text-sm font-medium text-gray-300 mb-1">
                   Student Name
                 </label>
@@ -196,12 +263,26 @@ const App: React.FC = () => {
                   onChange={(e) => setStudentName(e.target.value)}
                   disabled={isSessionActive}
                   className="w-full bg-gray-700 border border-gray-600 text-white rounded-md px-3 py-2 focus:ring-accent focus:border-accent disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  placeholder="e.g., Ms. Davis"
+                  placeholder="e.g., Mr. Hart"
+                />
+              </div>
+               <div className="mb-4">
+                <label htmlFor="professor-name" className="block text-sm font-medium text-gray-300 mb-1">
+                  Professor Name
+                </label>
+                <input
+                  id="professor-name"
+                  type="text"
+                  value={professorName}
+                  onChange={(e) => setProfessorName(e.target.value)}
+                  disabled={isSessionActive}
+                  className="w-full bg-gray-700 border border-gray-600 text-white rounded-md px-3 py-2 focus:ring-accent focus:border-accent disabled:bg-gray-800 disabled:cursor-not-allowed"
+                  placeholder="e.g., Professor Kingsfield"
                 />
               </div>
                <div className="mb-4">
                 <label htmlFor="voice-select" className="block text-sm font-medium text-gray-300 mb-1">
-                  Professor's Voice
+                  AI Voice
                 </label>
                 <select
                   id="voice-select"
@@ -272,47 +353,92 @@ const App: React.FC = () => {
                     </>
                 )}
               </div>
-              <div className="mb-4">
-                {!isPersonalityVisible ? (
-                    <button
-                        onClick={() => setIsPersonalityVisible(true)}
-                        disabled={isSessionActive}
-                        className="w-full text-left p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <h3 className="font-semibold text-white">Reveal or Edit Professor Personality</h3>
-                        <p className="text-sm text-gray-400 mt-1">Click to view and modify the professor's profile.</p>
-                    </button>
-                ) : (
-                    <>
-                        <div className="flex justify-between items-center mb-1">
-                            <label htmlFor="personality-profile" className="block text-sm font-medium text-gray-300">
-                                Professor Personality
-                            </label>
-                            <button 
-                                onClick={() => setIsPersonalityVisible(false)}
-                                disabled={isSessionActive}
-                                className="text-sm text-accent hover:underline disabled:text-gray-500 disabled:cursor-not-allowed"
-                            >
-                                Hide
-                            </button>
-                        </div>
-                        <textarea
-                            id="personality-profile"
-                            rows={6}
-                            value={personalityProfile}
-                            onChange={(e) => setPersonalityProfile(e.target.value)}
-                            disabled={isSessionActive}
-                            className="w-full bg-gray-700 border border-gray-600 text-white rounded-md px-3 py-2 focus:ring-accent focus:border-accent disabled:bg-gray-800 disabled:cursor-not-allowed mb-2"
-                            placeholder="Paste professor personality here or upload a file..."
-                        />
-                        <FileUpload
-                            id="personality-upload"
-                            onFileContentSelect={handleFileContentSelect(setPersonalityProfile)}
-                            disabled={isSessionActive}
-                        />
-                    </>
-                )}
-              </div>
+              {mode === 'student' && (
+                <div className="mb-4">
+                  {!isPersonalityVisible ? (
+                      <button
+                          onClick={() => setIsPersonalityVisible(true)}
+                          disabled={isSessionActive}
+                          className="w-full text-left p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                          <h3 className="font-semibold text-white">Reveal or Edit Professor Personality</h3>
+                          <p className="text-sm text-gray-400 mt-1">Click to view and modify the AI professor's profile.</p>
+                      </button>
+                  ) : (
+                      <>
+                          <div className="flex justify-between items-center mb-1">
+                              <label htmlFor="personality-profile" className="block text-sm font-medium text-gray-300">
+                                  Professor Personality
+                              </label>
+                              <button
+                                  onClick={() => setIsPersonalityVisible(false)}
+                                  disabled={isSessionActive}
+                                  className="text-sm text-accent hover:underline disabled:text-gray-500 disabled:cursor-not-allowed"
+                              >
+                                  Hide
+                              </button>
+                          </div>
+                          <textarea
+                              id="personality-profile"
+                              rows={6}
+                              value={personalityProfile}
+                              onChange={(e) => setPersonalityProfile(e.target.value)}
+                              disabled={isSessionActive}
+                              className="w-full bg-gray-700 border border-gray-600 text-white rounded-md px-3 py-2 focus:ring-accent focus:border-accent disabled:bg-gray-800 disabled:cursor-not-allowed mb-2"
+                              placeholder="Paste professor personality here or upload a file..."
+                          />
+                          <FileUpload
+                              id="personality-upload"
+                              onFileContentSelect={handleFileContentSelect(setPersonalityProfile)}
+                              disabled={isSessionActive}
+                          />
+                      </>
+                  )}
+                </div>
+              )}
+              {mode === 'professor' && (
+                <div className="mb-4">
+                  {!isStudentPersonalityVisible ? (
+                      <button
+                          onClick={() => setIsStudentPersonalityVisible(true)}
+                          disabled={isSessionActive}
+                          className="w-full text-left p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                          <h3 className="font-semibold text-white">Reveal or Edit Student Personality</h3>
+                          <p className="text-sm text-gray-400 mt-1">Click to view and modify the AI student's profile.</p>
+                      </button>
+                  ) : (
+                      <>
+                          <div className="flex justify-between items-center mb-1">
+                              <label htmlFor="student-personality" className="block text-sm font-medium text-gray-300">
+                                  Student Personality
+                              </label>
+                              <button
+                                  onClick={() => setIsStudentPersonalityVisible(false)}
+                                  disabled={isSessionActive}
+                                  className="text-sm text-accent hover:underline disabled:text-gray-500 disabled:cursor-not-allowed"
+                              >
+                                  Hide
+                              </button>
+                          </div>
+                          <textarea
+                              id="student-personality"
+                              rows={6}
+                              value={studentPersonality}
+                              onChange={(e) => setStudentPersonality(e.target.value)}
+                              disabled={isSessionActive}
+                              className="w-full bg-gray-700 border border-gray-600 text-white rounded-md px-3 py-2 focus:ring-accent focus:border-accent disabled:bg-gray-800 disabled:cursor-not-allowed mb-2"
+                              placeholder="Paste student personality here or upload a file..."
+                          />
+                          <FileUpload
+                              id="student-personality-upload"
+                              onFileContentSelect={handleFileContentSelect(setStudentPersonality)}
+                              disabled={isSessionActive}
+                          />
+                      </>
+                  )}
+                </div>
+              )}
             </div>
             <div className="bg-neutral p-4 rounded-lg shadow-lg">
               <h2 className="text-xl font-semibold mb-3 text-white">Session Control</h2>
@@ -391,8 +517,9 @@ const App: React.FC = () => {
                 </div>
               )}
               {transcript.map((item, index) => (
-                <TranscriptEntry key={index} item={item} studentName={studentName} />
+                <TranscriptEntry key={index} item={item} mode={mode} studentName={studentName} professorName={professorName} />
               ))}
+              <div ref={transcriptEndRef} />
             </div>
           </div>
         </main>
@@ -403,24 +530,29 @@ const App: React.FC = () => {
 
 interface TranscriptEntryProps {
     item: TranscriptItem;
+    mode: 'student' | 'professor';
     studentName: string;
+    professorName: string;
 }
 
-const TranscriptEntry: React.FC<TranscriptEntryProps> = ({ item, studentName }) => {
+const TranscriptEntry: React.FC<TranscriptEntryProps> = ({ item, mode, studentName, professorName }) => {
     const isUser = item.speaker === 'user';
+    const userName = mode === 'student' ? studentName : professorName;
+    const aiName = mode === 'student' ? 'Professor' : 'Student';
+
     return (
         <div className={`flex items-start gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}>
             {!isUser && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center" title="Professor">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center" title={aiName}>
                     <BotIcon />
                 </div>
             )}
             <div className={`max-w-md p-3 rounded-lg shadow ${isUser ? 'bg-primary text-white rounded-br-none' : 'bg-gray-700 text-gray-200 rounded-bl-none'}`}>
-                <p className="font-bold text-sm mb-1">{isUser ? studentName : 'Professor'}</p>
+                <p className="font-bold text-sm mb-1">{isUser ? userName : aiName}</p>
                 <p className="text-sm">{item.text}</p>
             </div>
              {isUser && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent flex items-center justify-center" title={studentName}>
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent flex items-center justify-center" title={userName}>
                     <UserIcon />
                 </div>
             )}

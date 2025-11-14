@@ -5,7 +5,7 @@ import { decode, decodeAudioData, createBlob } from '../services/audioUtils';
 import { TranscriptItem, PrebuiltVoice } from '../types';
 import { GEMINI_AUDIO_INPUT_PRICE_PER_SECOND, GEMINI_AUDIO_OUTPUT_PRICE_PER_SECOND } from '../constants';
 
-export const useSocraticTutor = (systemInstruction: string, voiceName: PrebuiltVoice, apiKey: string) => {
+export const useSocraticTutor = (systemInstruction: string, voiceName: PrebuiltVoice, apiKey: string, mode: 'student' | 'professor') => {
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [status, setStatus] = useState('Idle. Press start to begin.');
@@ -136,12 +136,16 @@ export const useSocraticTutor = (systemInstruction: string, voiceName: PrebuiltV
         },
         callbacks: {
           onopen: () => {
-            setStatus('Connection open. Professor is preparing...');
-            
-            if (sessionPromiseRef.current) {
-                sessionPromiseRef.current.then((session) => {
-                    session.sendRealtimeInput({ text: 'I am ready, Professor.' });
-                }).catch(e => console.error("Error sending initial prompt", e));
+            if (mode === 'student') {
+              setStatus('Connection open. Professor is preparing...');
+
+              if (sessionPromiseRef.current) {
+                  sessionPromiseRef.current.then((session) => {
+                      session.sendRealtimeInput({ text: 'I am ready, Professor.' });
+                  }).catch(e => console.error("Error sending initial prompt", e));
+              }
+            } else {
+              setStatus('Connection open. Student is ready...');
             }
 
             mediaStreamSourceRef.current = inputAudioContextRef.current!.createMediaStreamSource(stream);
