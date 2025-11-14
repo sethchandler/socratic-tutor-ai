@@ -2,6 +2,7 @@
 export interface TranscriptItem {
   speaker: 'user' | 'professor';
   text: string;
+  final?: boolean;
 }
 
 export interface TranscriptEntryProps {

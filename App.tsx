@@ -147,6 +147,7 @@ const App: React.FC = () => {
   };
   
   const isStartDisabled = !apiKey || isSessionActive;
+  const isStopDisabled = !isSessionActive;
 
   return (
     <div className="min-h-screen bg-base-100 text-gray-200 font-sans flex flex-col items-center p-4 sm:p-6 lg:p-8">
@@ -318,7 +319,7 @@ const App: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleToggleSession}
-                  disabled={isStartDisabled}
+                  disabled={isSessionActive ? isStopDisabled : isStartDisabled}
                   className={`w-full flex items-center justify-center gap-3 px-4 py-3 rounded-md font-bold text-lg transition-all duration-300 ease-in-out transform hover:scale-105 ${
                     isSessionActive ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-accent hover:bg-green-500 text-black'
                   } disabled:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none`}

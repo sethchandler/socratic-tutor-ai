@@ -167,27 +167,76 @@ export const useSocraticTutor = (systemInstruction: string, voiceName: PrebuiltV
           onmessage: async (message: LiveServerMessage) => {
             if (message.serverContent?.inputTranscription) {
                 currentInputTranscriptionRef.current += message.serverContent.inputTranscription.text;
+
+                // Update transcript in real-time for user speech
+                setTranscript(prev => {
+                    const updated = [...prev];
+                    const lastEntry = updated[updated.length - 1];
+
+                    if (lastEntry && lastEntry.speaker === 'user' && !lastEntry.final) {
+                        // Update existing user entry
+                        updated[updated.length - 1] = {
+                            speaker: 'user',
+                            text: currentInputTranscriptionRef.current.trim(),
+                            final: false
+                        };
+                    } else if (currentInputTranscriptionRef.current.trim()) {
+                        // Add new user entry
+                        updated.push({
+                            speaker: 'user',
+                            text: currentInputTranscriptionRef.current.trim(),
+                            final: false
+                        });
+                    }
+                    return updated;
+                });
             }
             if (message.serverContent?.outputTranscription) {
                 currentOutputTranscriptionRef.current += message.serverContent.outputTranscription.text;
+
+                // Update transcript in real-time for professor speech
+                setTranscript(prev => {
+                    const updated = [...prev];
+                    const lastEntry = updated[updated.length - 1];
+
+                    if (lastEntry && lastEntry.speaker === 'professor' && !lastEntry.final) {
+                        // Update existing professor entry
+                        updated[updated.length - 1] = {
+                            speaker: 'professor',
+                            text: currentOutputTranscriptionRef.current.trim(),
+                            final: false
+                        };
+                    } else if (currentOutputTranscriptionRef.current.trim()) {
+                        // Add new professor entry
+                        updated.push({
+                            speaker: 'professor',
+                            text: currentOutputTranscriptionRef.current.trim(),
+                            final: false
+                        });
+                    }
+                    return updated;
+                });
             }
 
             if (message.serverContent?.turnComplete) {
-                const newEntries: TranscriptItem[] = [];
-                const userText = currentInputTranscriptionRef.current.trim();
-                const professorText = currentOutputTranscriptionRef.current.trim();
+                // Mark entries as final when turn is complete
+                setTranscript(prev => {
+                    const updated = [...prev];
+                    if (updated.length > 0) {
+                        const lastEntry = updated[updated.length - 1];
+                        if (!lastEntry.final) {
+                            updated[updated.length - 1] = { ...lastEntry, final: true };
+                        }
+                        if (updated.length > 1) {
+                            const secondLastEntry = updated[updated.length - 2];
+                            if (!secondLastEntry.final) {
+                                updated[updated.length - 2] = { ...secondLastEntry, final: true };
+                            }
+                        }
+                    }
+                    return updated;
+                });
 
-                if (userText) {
-                    newEntries.push({ speaker: 'user', text: userText });
-                }
-                if (professorText) {
-                    newEntries.push({ speaker: 'professor', text: professorText });
-                }
-
-                if (newEntries.length > 0) {
-                    setTranscript(prev => [...prev, ...newEntries]);
-                }
-                
                 currentInputTranscriptionRef.current = '';
                 currentOutputTranscriptionRef.current = '';
             }
