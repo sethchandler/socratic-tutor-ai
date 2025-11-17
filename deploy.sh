@@ -13,11 +13,12 @@ cd dist
 
 # Initialize git in dist folder
 git init
+git checkout -b gh-pages
 git add -A
 git commit -m 'Deploy to GitHub Pages'
 
 # Force push to gh-pages branch
-git push -f git@github.com:sethchandler/socratic-tutor-ai.git main:gh-pages
+git push -f git@github.com:sethchandler/socratic-tutor-ai.git gh-pages:gh-pages
 
 cd ..
 echo "Deployment complete!"

@@ -23,6 +23,8 @@ const App: React.FC = () => {
   const [isPersonalityVisible, setIsPersonalityVisible] = useState<boolean>(false);
   const [isStudentPersonalityVisible, setIsStudentPersonalityVisible] = useState<boolean>(false);
   const [expandedEditor, setExpandedEditor] = useState<'materials' | 'professor' | 'student' | null>(null);
+  const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedMicId, setSelectedMicId] = useState<string>('');
   const transcriptEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,6 +33,21 @@ const App: React.FC = () => {
       setApiKey(savedKey);
       setTempApiKey(savedKey);
     }
+
+    // Enumerate audio input devices
+    const getAudioDevices = async () => {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioInputs = devices.filter(device => device.kind === 'audioinput');
+        setAudioDevices(audioInputs);
+        if (audioInputs.length > 0 && !selectedMicId) {
+          setSelectedMicId(audioInputs[0].deviceId);
+        }
+      } catch (err) {
+        console.error('Error enumerating devices:', err);
+      }
+    };
+    getAudioDevices();
   }, []);
 
   const handleSaveApiKey = () => {
@@ -93,7 +110,7 @@ const App: React.FC = () => {
     stopSession,
     pauseSession,
     resumeSession,
-  } = useSocraticTutor(systemInstruction, voice, apiKey, mode);
+  } = useSocraticTutor(systemInstruction, voice, apiKey, mode, selectedMicId);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -293,6 +310,24 @@ const App: React.FC = () => {
                   className="w-full bg-gray-700 border border-gray-600 text-white rounded-md px-3 py-2 focus:ring-accent focus:border-accent disabled:bg-gray-800 disabled:cursor-not-allowed"
                 >
                   {PREBUILT_VOICES.map(v => <option key={v} value={v}>{v}</option>)}
+                </select>
+              </div>
+              <div className="mb-4">
+                <label htmlFor="microphone-select" className="block text-sm font-medium text-gray-300 mb-1">
+                  Microphone
+                </label>
+                <select
+                  id="microphone-select"
+                  value={selectedMicId}
+                  onChange={(e) => setSelectedMicId(e.target.value)}
+                  disabled={isSessionActive}
+                  className="w-full bg-gray-700 border border-gray-600 text-white rounded-md px-3 py-2 focus:ring-accent focus:border-accent disabled:bg-gray-800 disabled:cursor-not-allowed"
+                >
+                  {audioDevices.map(device => (
+                    <option key={device.deviceId} value={device.deviceId}>
+                      {device.label || `Microphone ${device.deviceId.substring(0, 8)}...`}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="mb-4">
