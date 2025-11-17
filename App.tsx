@@ -4,7 +4,7 @@ import { DEFAULT_CLASS_MATERIALS, DEFAULT_PERSONALITY_PROFILE, DEFAULT_STUDENT_P
 import { useSocraticTutor } from './hooks/useSocraticTutor';
 import FileUpload from './components/FileUpload';
 import { TranscriptItem, PrebuiltVoice, PREBUILT_VOICES } from './types';
-import { MicIcon, StopCircleIcon, UserIcon, BotIcon, SaveIcon, PauseIcon, PlayIcon, ChevronDownIcon, KeyIcon } from './components/Icons';
+import { MicIcon, StopCircleIcon, UserIcon, BotIcon, SaveIcon, PauseIcon, PlayIcon, ChevronDownIcon, KeyIcon, ExpandIcon, CloseIcon } from './components/Icons';
 
 const App: React.FC = () => {
   const [apiKey, setApiKey] = useState<string>('');
@@ -22,6 +22,7 @@ const App: React.FC = () => {
   const [isMaterialsVisible, setIsMaterialsVisible] = useState<boolean>(false);
   const [isPersonalityVisible, setIsPersonalityVisible] = useState<boolean>(false);
   const [isStudentPersonalityVisible, setIsStudentPersonalityVisible] = useState<boolean>(false);
+  const [expandedEditor, setExpandedEditor] = useState<'materials' | 'professor' | 'student' | null>(null);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -328,13 +329,23 @@ const App: React.FC = () => {
                             <label htmlFor="class-materials" className="block text-sm font-medium text-gray-300">
                                 Class Materials
                             </label>
-                            <button 
-                                onClick={() => setIsMaterialsVisible(false)}
-                                disabled={isSessionActive}
-                                className="text-sm text-accent hover:underline disabled:text-gray-500 disabled:cursor-not-allowed"
-                            >
-                                Hide
-                            </button>
+                            <div className="flex gap-2 items-center">
+                                <button
+                                    onClick={() => setExpandedEditor('materials')}
+                                    disabled={isSessionActive}
+                                    className="text-gray-300 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="Expand editor"
+                                >
+                                    <ExpandIcon />
+                                </button>
+                                <button
+                                    onClick={() => setIsMaterialsVisible(false)}
+                                    disabled={isSessionActive}
+                                    className="text-sm text-accent hover:underline disabled:text-gray-500 disabled:cursor-not-allowed"
+                                >
+                                    Hide
+                                </button>
+                            </div>
                         </div>
                         <textarea
                             id="class-materials"
@@ -370,13 +381,23 @@ const App: React.FC = () => {
                               <label htmlFor="personality-profile" className="block text-sm font-medium text-gray-300">
                                   Professor Personality
                               </label>
-                              <button
-                                  onClick={() => setIsPersonalityVisible(false)}
-                                  disabled={isSessionActive}
-                                  className="text-sm text-accent hover:underline disabled:text-gray-500 disabled:cursor-not-allowed"
-                              >
-                                  Hide
-                              </button>
+                              <div className="flex gap-2 items-center">
+                                  <button
+                                      onClick={() => setExpandedEditor('professor')}
+                                      disabled={isSessionActive}
+                                      className="text-gray-300 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                      title="Expand editor"
+                                  >
+                                      <ExpandIcon />
+                                  </button>
+                                  <button
+                                      onClick={() => setIsPersonalityVisible(false)}
+                                      disabled={isSessionActive}
+                                      className="text-sm text-accent hover:underline disabled:text-gray-500 disabled:cursor-not-allowed"
+                                  >
+                                      Hide
+                                  </button>
+                              </div>
                           </div>
                           <textarea
                               id="personality-profile"
@@ -413,13 +434,23 @@ const App: React.FC = () => {
                               <label htmlFor="student-personality" className="block text-sm font-medium text-gray-300">
                                   Student Personality
                               </label>
-                              <button
-                                  onClick={() => setIsStudentPersonalityVisible(false)}
-                                  disabled={isSessionActive}
-                                  className="text-sm text-accent hover:underline disabled:text-gray-500 disabled:cursor-not-allowed"
-                              >
-                                  Hide
-                              </button>
+                              <div className="flex gap-2 items-center">
+                                  <button
+                                      onClick={() => setExpandedEditor('student')}
+                                      disabled={isSessionActive}
+                                      className="text-gray-300 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                      title="Expand editor"
+                                  >
+                                      <ExpandIcon />
+                                  </button>
+                                  <button
+                                      onClick={() => setIsStudentPersonalityVisible(false)}
+                                      disabled={isSessionActive}
+                                      className="text-sm text-accent hover:underline disabled:text-gray-500 disabled:cursor-not-allowed"
+                                  >
+                                      Hide
+                                  </button>
+                              </div>
                           </div>
                           <textarea
                               id="student-personality"
@@ -524,6 +555,55 @@ const App: React.FC = () => {
           </div>
         </main>
       </div>
+      {expandedEditor && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+          <div className="bg-neutral rounded-lg shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
+            <div className="flex justify-between items-center p-4 border-b border-gray-600">
+              <h3 className="text-xl font-semibold text-white">
+                {expandedEditor === 'materials' && 'Edit Class Materials'}
+                {expandedEditor === 'professor' && 'Edit Professor Personality'}
+                {expandedEditor === 'student' && 'Edit Student Personality'}
+              </h3>
+              <button
+                onClick={() => setExpandedEditor(null)}
+                className="p-2 hover:bg-gray-700 rounded-md transition-colors"
+                aria-label="Close editor"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="flex-1 p-4 overflow-hidden">
+              <textarea
+                value={
+                  expandedEditor === 'materials' ? classMaterials :
+                  expandedEditor === 'professor' ? personalityProfile :
+                  studentPersonality
+                }
+                onChange={(e) => {
+                  if (expandedEditor === 'materials') setClassMaterials(e.target.value);
+                  else if (expandedEditor === 'professor') setPersonalityProfile(e.target.value);
+                  else setStudentPersonality(e.target.value);
+                }}
+                disabled={isSessionActive}
+                className="w-full h-full bg-gray-700 border border-gray-600 text-white rounded-md px-4 py-3 focus:ring-accent focus:border-accent disabled:bg-gray-800 disabled:cursor-not-allowed resize-none font-mono text-sm"
+                placeholder={
+                  expandedEditor === 'materials' ? 'Enter class materials here...' :
+                  expandedEditor === 'professor' ? 'Enter professor personality here...' :
+                  'Enter student personality here...'
+                }
+              />
+            </div>
+            <div className="p-4 border-t border-gray-600 flex justify-end">
+              <button
+                onClick={() => setExpandedEditor(null)}
+                className="px-6 py-2 bg-accent text-black rounded-md hover:bg-green-500 transition-colors font-medium"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
