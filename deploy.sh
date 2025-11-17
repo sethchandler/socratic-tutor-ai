@@ -11,7 +11,8 @@ npm run build
 echo "Deploying to gh-pages branch..."
 cd dist
 
-# Initialize git in dist folder
+# Clean any existing git repo and initialize fresh
+rm -rf .git
 git init
 git checkout -b gh-pages
 git add -A
