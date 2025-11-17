@@ -5,7 +5,7 @@ import { decode, decodeAudioData, createBlob } from '../services/audioUtils';
 import { TranscriptItem, PrebuiltVoice } from '../types';
 import { GEMINI_AUDIO_INPUT_PRICE_PER_SECOND, GEMINI_AUDIO_OUTPUT_PRICE_PER_SECOND } from '../constants';
 
-export const useSocraticTutor = (systemInstruction: string, voiceName: PrebuiltVoice, apiKey: string, mode: 'student' | 'professor', microphoneId?: string) => {
+export const useSocraticTutor = (systemInstruction: string, voiceName: PrebuiltVoice, apiKey: string, mode: 'student' | 'professor') => {
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [status, setStatus] = useState('Idle. Press start to begin.');
@@ -114,9 +114,7 @@ export const useSocraticTutor = (systemInstruction: string, voiceName: PrebuiltV
     setEstimatedCost(0);
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: microphoneId ? { deviceId: { exact: microphoneId } } : true
-      });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaStreamRef.current = stream;
       setIsSessionActive(true);
       setIsPaused(false);
