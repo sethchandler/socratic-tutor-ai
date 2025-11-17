@@ -1,5 +1,6 @@
 
 import { useState, useRef, useCallback } from 'react';
+import { unstable_batchedUpdates } from 'react-dom';
 import { GoogleGenAI, LiveServerMessage, Modality, LiveSession } from '@google/genai';
 import { decode, decodeAudioData, createBlob } from '../services/audioUtils';
 import { TranscriptItem, PrebuiltVoice } from '../types';
@@ -114,7 +115,23 @@ export const useSocraticTutor = (systemInstruction: string, voiceName: PrebuiltV
     setEstimatedCost(0);
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (inputAudioContextRef.current && inputAudioContextRef.current.state !== 'closed') {
+        await inputAudioContextRef.current.close();
+        inputAudioContextRef.current = null;
+      }
+      if (outputAudioContextRef.current && outputAudioContextRef.current.state !== 'closed') {
+        await outputAudioContextRef.current.close();
+        outputAudioContextRef.current = null;
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            sampleRate: 16000,
+        },
+      });
       mediaStreamRef.current = stream;
       setIsSessionActive(true);
       setIsPaused(false);
@@ -169,80 +186,90 @@ export const useSocraticTutor = (systemInstruction: string, voiceName: PrebuiltV
             scriptProcessorRef.current.connect(inputAudioContextRef.current!.destination);
           },
           onmessage: async (message: LiveServerMessage) => {
-            if (message.serverContent?.inputTranscription) {
-                currentInputTranscriptionRef.current += message.serverContent.inputTranscription.text;
+            const hasTranscriptUpdate = Boolean(
+                message.serverContent?.inputTranscription ||
+                message.serverContent?.outputTranscription ||
+                message.serverContent?.turnComplete
+            );
 
-                // Update transcript in real-time for user speech
-                setTranscript(prev => {
-                    const updated = [...prev];
-                    const lastEntry = updated[updated.length - 1];
+            if (hasTranscriptUpdate) {
+                unstable_batchedUpdates(() => {
+                    if (message.serverContent?.inputTranscription) {
+                        currentInputTranscriptionRef.current += message.serverContent.inputTranscription.text;
 
-                    if (lastEntry && lastEntry.speaker === 'user' && !lastEntry.final) {
-                        // Update existing user entry
-                        updated[updated.length - 1] = {
-                            speaker: 'user',
-                            text: currentInputTranscriptionRef.current.trim(),
-                            final: false
-                        };
-                    } else if (currentInputTranscriptionRef.current.trim()) {
-                        // Add new user entry
-                        updated.push({
-                            speaker: 'user',
-                            text: currentInputTranscriptionRef.current.trim(),
-                            final: false
-                        });
-                    }
-                    return updated;
-                });
-            }
-            if (message.serverContent?.outputTranscription) {
-                currentOutputTranscriptionRef.current += message.serverContent.outputTranscription.text;
+                        // Update transcript in real-time for user speech
+                        setTranscript(prev => {
+                            const updated = [...prev];
+                            const lastEntry = updated[updated.length - 1];
 
-                // Update transcript in real-time for professor speech
-                setTranscript(prev => {
-                    const updated = [...prev];
-                    const lastEntry = updated[updated.length - 1];
-
-                    if (lastEntry && lastEntry.speaker === 'professor' && !lastEntry.final) {
-                        // Update existing professor entry
-                        updated[updated.length - 1] = {
-                            speaker: 'professor',
-                            text: currentOutputTranscriptionRef.current.trim(),
-                            final: false
-                        };
-                    } else if (currentOutputTranscriptionRef.current.trim()) {
-                        // Add new professor entry
-                        updated.push({
-                            speaker: 'professor',
-                            text: currentOutputTranscriptionRef.current.trim(),
-                            final: false
-                        });
-                    }
-                    return updated;
-                });
-            }
-
-            if (message.serverContent?.turnComplete) {
-                // Mark entries as final when turn is complete
-                setTranscript(prev => {
-                    const updated = [...prev];
-                    if (updated.length > 0) {
-                        const lastEntry = updated[updated.length - 1];
-                        if (!lastEntry.final) {
-                            updated[updated.length - 1] = { ...lastEntry, final: true };
-                        }
-                        if (updated.length > 1) {
-                            const secondLastEntry = updated[updated.length - 2];
-                            if (!secondLastEntry.final) {
-                                updated[updated.length - 2] = { ...secondLastEntry, final: true };
+                            if (lastEntry && lastEntry.speaker === 'user' && !lastEntry.final) {
+                                // Update existing user entry
+                                updated[updated.length - 1] = {
+                                    speaker: 'user',
+                                    text: currentInputTranscriptionRef.current.trim(),
+                                    final: false
+                                };
+                            } else if (currentInputTranscriptionRef.current.trim()) {
+                                // Add new user entry
+                                updated.push({
+                                    speaker: 'user',
+                                    text: currentInputTranscriptionRef.current.trim(),
+                                    final: false
+                                });
                             }
-                        }
+                            return updated;
+                        });
                     }
-                    return updated;
-                });
+                    if (message.serverContent?.outputTranscription) {
+                        currentOutputTranscriptionRef.current += message.serverContent.outputTranscription.text;
 
-                currentInputTranscriptionRef.current = '';
-                currentOutputTranscriptionRef.current = '';
+                        // Update transcript in real-time for professor speech
+                        setTranscript(prev => {
+                            const updated = [...prev];
+                            const lastEntry = updated[updated.length - 1];
+
+                            if (lastEntry && lastEntry.speaker === 'professor' && !lastEntry.final) {
+                                // Update existing professor entry
+                                updated[updated.length - 1] = {
+                                    speaker: 'professor',
+                                    text: currentOutputTranscriptionRef.current.trim(),
+                                    final: false
+                                };
+                            } else if (currentOutputTranscriptionRef.current.trim()) {
+                                // Add new professor entry
+                                updated.push({
+                                    speaker: 'professor',
+                                    text: currentOutputTranscriptionRef.current.trim(),
+                                    final: false
+                                });
+                            }
+                            return updated;
+                        });
+                    }
+
+                    if (message.serverContent?.turnComplete) {
+                        // Mark entries as final when turn is complete
+                        setTranscript(prev => {
+                            const updated = [...prev];
+                            if (updated.length > 0) {
+                                const lastEntry = updated[updated.length - 1];
+                                if (!lastEntry.final) {
+                                    updated[updated.length - 1] = { ...lastEntry, final: true };
+                                }
+                                if (updated.length > 1) {
+                                    const secondLastEntry = updated[updated.length - 2];
+                                    if (!secondLastEntry.final) {
+                                        updated[updated.length - 2] = { ...secondLastEntry, final: true };
+                                    }
+                                }
+                            }
+                            return updated;
+                        });
+
+                        currentInputTranscriptionRef.current = '';
+                        currentOutputTranscriptionRef.current = '';
+                    }
+                });
             }
 
             const audioDataB64 = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;

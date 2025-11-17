@@ -22,36 +22,184 @@ You are a diligent student engaged in a Socratic dialogue with your professor.
 `;
 
 export const DEFAULT_CLASS_MATERIALS = `
-%%% I'll add a comprehensive discussion of contract damages to the summary.
+**TEACHING GUIDE: *Hawkins v. McGee* (N.H. 1929)**  
+*For the 1L Contracts Professor: From Black Letter Basics to the Tort-Contract Borderland*
 
-**Facts:**
-George Hawkins, a young boy, had been burned and had significant scarring on his hand. Dr. Edward McGee promised to restore the hand to perfection, claiming he had performed the operation "a hundred times" and that Hawkins would be "in the hospital three or four days, not over four... and that the hand would be a hundred percent perfect hand." The doctor grafted skin from the boy's chest onto his hand.  %%% 
+---
 
-**The Problem:**
-The operation went badly wrong. The grafted skin from the chest area contained hair follicles, resulting in a hand covered with thick hair - hence the nickname "hairy hand case." The hand was also left in worse condition than before the surgery, with increased scar tissue and reduced functionality.
+## **I. CASE SNAPSHOT FOR STUDENTS**  
+*"The Hairy Hand Case"*
 
-**Legal Issue:**
-The central question was whether the doctor's statements constituted an enforceable warranty or guarantee, and if so, what damages should be awarded.
+**Facts:**  
+11-year-old George Hawkins has a burned, scarred hand. Dr. McGee promises: "I've done this a hundred times. You'll be in the hospital 3-4 days, no more, and you'll have a *hundred percent perfect hand*." He grafts skin from the boy's chest. The result: a hand covered in thick chest hair, with reduced function and worse scarring—the "hairy hand."
 
-**Holding:**
-The New Hampshire Supreme Court found that Dr. McGee had indeed made a contractual guarantee about the outcome of the surgery. The court held that when a physician makes specific promises about results beyond the usual standard of care, those promises can constitute an enforceable contract.
+**Procedural Posture:**  
+Trial court awards $3,000 (likely based on pain and suffering). New Hampshire Supreme Court reverses and remands, holding jury instructions were wrong—this is a contract case, not a tort case.
 
-**Contract Damages: Expectation, Reliance, and Restitution**
+**Holding:**  
+When a physician makes a specific promise of result beyond the standard of care, it can constitute an enforceable contract. The proper measure of damages is **expectation damages**: the difference in value between the hand as promised ("perfect") and the hand as delivered ("hairy"), excluding pain and suffering.
 
-Contract law recognizes three primary measures of damages, each serving different purposes and protecting different interests.
+---
 
-Expectation damages put the non-breaching party in the position they would have occupied had the contract been fully performed. This is the default remedy in contract law and represents the "benefit of the bargain." In *Hawkins*, this meant the difference between the value of a perfect hand (as promised) and the value of the hairy, defective hand George received. Expectation damages are preferred because they give full effect to the parties' agreement and provide the strongest incentive for performance.
+## **II. TEACHING THE CORE DAMAGES CONCEPTS**  
+*(1L Foundation Level)*
 
-Reliance damages compensate the injured party for expenses incurred and losses suffered in reasonable reliance on the contract, returning them to their pre-contract position. These are awarded when expectation damages cannot be proven with reasonable certainty or when the contract itself proves to be a losing proposition for the plaintiff. In *Hawkins*, reliance damages would have covered only the worsening of George's hand condition from the failed surgery, not the loss of the promised perfect hand.
+### **A. The Three Measures of Contract Damages**
 
-Restitution prevents unjust enrichment by requiring the breaching party to return any benefit conferred by the non-breaching party. This remedy focuses on the defendant's gain rather than the plaintiff's loss and is typically used when no valid contract exists or when the non-breaching party prefers to unwind the transaction rather than enforce it. Restitution would have measured what Dr. McGee gained from performing the surgery.
+Use this case to distinguish the three remedies:
 
-Specific performance, requiring actual performance of contractual obligations, is available primarily for unique goods like real estate where money damages are inadequate, but is almost never granted for personal service contracts.
+1. **Expectation Damages (The Default)**  
+   *"Benefit of the bargain"*  
+   Places the plaintiff in the position they would have been in had the contract been performed.  
+   **Formula:** Value of promised performance – Value of actual performance  
+   *Hawkins:* Value of a "perfect hand" – Value of the hairy, defective hand  
+   **Key Teaching Point:** This is *not* just "make me whole." It's "give me what you promised."
 
-**Significance:**
-This case is a staple of first-year Contracts courses because it illustrates the difference between expectation damages and reliance damages. The court awarded expectation damages - the difference between the value of the "perfect hand" that was promised and the value of the defective hand that resulted. This was more than just compensation for the worsening of the hand's condition; it included the benefit of the bargain the patient was promised.
+2. **Reliance Damages (The Safety Net)**  
+   *"Make me whole"*  
+   Returns plaintiff to their pre-contract position. Compensates for losses incurred in reasonable reliance.  
+   **Formula:** Loss suffered due to reliance on the promise  
+   *Hawkins would have been:* The *worsening* of his hand condition from the failed surgery, but **not** the loss of the promised perfect hand.  
+   **When Used:** When expectation damages are too speculative or the contract was a "losing deal" for plaintiff.
 
-The case remains important for establishing that doctors can be held liable in contract (not just tort) when they make specific guarantees about outcomes.
+3. **Restitution (The Unjust Enrichment Remedy)**  
+   *"Give back what you got"*  
+   Prevents defendant's unjust enrichment by returning benefit conferred.  
+   **Formula:** Value of benefit conferred on defendant  
+   *Hawkins would have been:* The value of the doctor's fee (or the value of the services performed).  
+   **When Used:** When no enforceable contract exists or plaintiff prefers to unwind the transaction.
+
+### **B. Why Expectation Damages Here?**
+
+The court chose expectation damages because:
+- **Certainty:** The promise was specific ("100% perfect hand"), making the expected value ascertainable
+- **Bargain Preservation:** It enforces the parties' agreement rather than unraveling it
+- **Default Rule:** Contract law presumes parties want the benefit of their bargain
+
+### **C. The "Pain as Consideration" Rule (The 1L Gotcha)**
+
+**Court's Logic:** "The pain was part of the price paid for the contract."  
+**Translation:** Hawkins voluntarily underwent pain to obtain the promised perfect hand. The pain was a *legal detriment* that formed consideration, not a *damage* from breach. This is counterintuitive—students must understand that contract damages focus on the *gap between promise and performance*, not the *cost of performance*.
+
+**Hypothetical Test:** If Dr. McGee had promised a "pain-free perfect hand," then pain could be a damage. But he only promised the *outcome*, not the *process*.
+
+---
+
+## **III. THE STRATEGIC CALCULUS**  
+*(Intermediate: Why the Plaintiff Was Right to Stick with Contract)*
+
+### **A. Why Not Waive Contract and Proceed in Tort?**
+
+**Short Answer: He couldn't.** The tort claim was procedurally dead. As revealed in advanced commentary, "the trial judge dismissed the tort count, and the patient's lawyer dropped the matter". But even if viable, contract offered decisive advantages:
+
+| **Factor** | **Contract Claim** | **Tort Claim (Malpractice)** |
+|------------|-------------------|------------------------------|
+| **Standard of Proof** | Breach of promise (objective) | Deviation from standard of care (subjective, complex) |
+| **Expert Witnesses** | Not required | **Absolutely required**—and nearly impossible to obtain |
+| **Jury Appeal** | Simple: "He promised X, delivered Y" | Complex medical testimony |
+| **Professional "Code of Silence"** | Irrelevant | **Fatal**: Doctors rarely testify against colleagues |
+
+**Key Teaching Point:** The contract claim was Hawkins' *only* path to recovery. Waiving it meant zero compensation.
+
+### **B. The Damages Trade-Off**
+
+**The Hard Choice:**  
+- **Contract:** Certain win, but limited to expectation damages (no pain & suffering)  
+- **Tort:** Uncertain win, but full compensatory damages (including pain & suffering, emotional distress, loss of enjoyment)
+
+**Strategic Reality:** A smaller certain recovery beats a larger speculative one. The parties eventually **settled for $1,400** before retrial, suggesting Hawkins' lawyer knew contract damages would be modest but certain.
+
+---
+
+## **IV. THE BORDERLAND DEEP DIVE**  
+*(Advanced/Health Law Level: The Case's Dark Legacy)*
+
+This case exposes three critical tensions at the tort-contract borderland:
+
+### **A. The Insurance Coverage Gap (The Hidden Landmine)**
+
+Dr. McGee's malpractice insurer disclaimed coverage for the contract claim, arguing policies cover **negligence**, not **guarantees**. This reveals:
+
+- **Pricing Assumption:** Insurance premiums are calculated on tort liability (reasonable care), not contractual warranties
+- **Doctor's Risk:** When physicians "overpromise," they may be **personally liable** beyond their insurance
+- **Patient's Risk:** Patients assume their doctor's promises are backed by insurance—often false
+
+**Discussion Question:** Should insurers be required to cover contractual promises? Or should doctors be prohibited from making promises that void coverage?
+
+### **B. Perverse Incentives: The Law Rewards Recklessness**
+
+The damages rule creates a backward incentive structure:
+
+- **Low-Quality Doctors** (who recklessly promise "100% cures") face **limited contract damages** (value gap)
+- **Cautious Doctors** (who make no promises) face **unlimited tort liability** (full harm)
+- **Result:** The law *penalizes* honest communication and *rewards* snake-oil salesmanship
+
+**Modern Parallel:** Cosmetic surgery clinics promising "guaranteed results" exploit this gap.
+
+### **C. The Categorical Mismatch: Medicine Is Neither Pure Tort Nor Pure Contract**
+
+The court analogized the case to a **machine warranty**, but medical relationships have unique features:
+
+| **Feature** | **Commercial Contract** | **Medical Relationship** | **Legal Implication** |
+|-------------|------------------------|--------------------------|----------------------|
+| **Bargaining Power** | Roughly equal | **Grossly unequal** (pain, fear, information asymmetry) | Should strict contract rules apply? |
+| **Consent** | Rational calculation | **Vulnerable reliance** | Does true "assent" exist? |
+| **Professional Duty** | Caveat emptor | **Fiduciary duty** (trust, disclosure) | Contract terms shouldn't override fiduciary duties |
+| **Damages Certainty** | Market value exists | **Incredibly speculative** (what's a "perfect hand" worth?) | Expectation damages are unpredictable |
+
+**Health Law Extension:** Modern courts recognize this hybrid nature. *Sullivan v. O'Connor* (Mass. 1973) later allowed recovery under *both* theories, awarding expectation damages *plus* pain and suffering for the breach itself, recognizing that medical promises create a "special relationship" that defies pure categorization.
+
+---
+
+## **V. CLASSROOM PEDAGOGY**
+
+### **A. For 1L Students: The Black Letter Drill**
+
+**Key Distinction:**  
+- **Tort:** "Make me whole for the harm you caused me" (compensatory, backward-looking)  
+- **Contract:** "Give me the benefit you promised" (performance-oriented, forward-looking)
+
+**Multiple Choice Trap:**  
+"Under *Hawkins*, can a patient recover for pain and suffering from a botched surgery?"  
+- **Wrong Answer:** "No, never."  
+- **Right Answer:** "No *in contract*, but yes *in tort*—if the tort claim is viable."
+
+**Hypothetical:** Doctor promises "You'll see 20/20 vision after LASIK." Patient ends up with 20/40 vision and severe dry eye pain. Under contract theory, what are the damages?  
+**Answer:** The value of 20/20 vision minus value of 20/40 vision. The dry eye pain? **Not recoverable** under contract—it's part of the "price paid" for the promised outcome.
+
+### **B. For Advanced Students: The Policy Critique**
+
+**Discussion Questions:**
+1. **Professional Speech:** If doctors' promises are enforceable contracts, should bar associations discipline attorneys who make outcome guarantees? Why the double standard?
+2. **Information Asymmetry:** Should courts apply a "reasonable patient" or "reasonable physician" standard to interpret medical promises?
+3. **Insurance Regulation:** Should states mandate that medical malpractice insurance cover contractual warranties to close the coverage gap?
+
+**Health Law Connection:**  
+In modern **informed consent** law, doctors must disclose material risks. A promise of "perfect results" could be seen as *fraudulent* if the doctor knows it's unrealistic. Should there be a tort of **"fraudulent promise"** that bridges the gap?
+
+### **C. Common Student Misconceptions to Address**
+
+-  **"This is a medical malpractice case."**  **Correction:** It's *not* malpractice—it's breach of a specific promise. Distinguish "failure to exercise reasonable care" (tort) from "failure to achieve promised result" (contract).
+-  **"The court was unfair to the boy."**  **Correction:** The court enforced contract doctrine neutrally. The "unfairness" is in the *doctrine itself*, not its application.
+-  **"Doctors can't be sued in contract."**  **Correction:** They can, and often *should* be when they make specific promises. The limitation is in *damages*, not liability.
+
+---
+
+## **VI. SYNTHESIS: THE CASE'S ENDURING LESSON**
+
+*Hawkins v. McGee* is more than a damages case. It's a **cautionary tale about legal categorization**:
+
+1. **For Students:** It teaches that **remedy determines rights**. The measure of damages *is* the substantive law.
+
+2. **For Practitioners:** It reveals that **procedural posture is strategic**. The viability of a claim depends not just on legal theory but on **evidentiary realities** (expert witnesses) and **financial backstops** (insurance).
+
+3. **For Policymakers:** It exposes that **medicine lives in a legal borderland** where contract and tort are inadequate alone. The modern trend is toward **hybrid liability**—allowing contract claims but permitting tort damages where appropriate, as in *Sullivan v. O'Connor*.
+
+**Final Exam Tip:** When a fact pattern involves a **specific promise** by a professional, always discuss **both** contract and tort theories. Flag the *Hawkins* rule: contract damages are limited to expectation, but tort may be blocked by procedural hurdles. The best answer explores the borderland, not just one side of it.
+
+---
+
+**Endnote for Professor:** The case's true pedagogical value lies not in its holding, but in its **silences**: Why did Dr. McGee make such a reckless promise? Why did Hawkins' family accept it? What does it say about a system where the law's categories **fail to match human experience**? Push advanced students to see that *Hawkins* isn't just about damages—it's about the limits of legal formalism in regulating trust-based relationships.
 `;
 
 export const GEMINI_AUDIO_INPUT_PRICE_PER_SECOND = 0.0001;

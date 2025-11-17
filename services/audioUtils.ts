@@ -29,7 +29,7 @@ export async function decodeAudioData(
   sampleRate: number,
   numChannels: number,
 ): Promise<AudioBuffer> {
-  const dataInt16 = new Int16Array(data.buffer);
+  const dataInt16 = new Int16Array(data.buffer, data.byteOffset, data.byteLength / 2);
   const frameCount = dataInt16.length / numChannels;
   const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
 
@@ -47,7 +47,8 @@ export function createBlob(data: Float32Array): Blob {
     const l = data.length;
     const int16 = new Int16Array(l);
     for (let i = 0; i < l; i++) {
-        int16[i] = data[i] * 32768;
+        const sample = Math.max(-1, Math.min(1, data[i]));
+        int16[i] = Math.max(-32768, Math.min(32767, Math.round(sample * 32768)));
     }
     return {
         data: encode(new Uint8Array(int16.buffer)),
